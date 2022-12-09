@@ -5,11 +5,14 @@ import os
 def load_data(data_name):
     data = {}
     if data_name=="synth":
-        base_path = "data/synth_data/data/"
-        middle= "_F_10_TS_100_Positional_"
-        for generation_kinds in ["AutoRegressive","GaussianProcess","PseudoPeriodic"]:
-            #TODO create github repo
-            for positional in ["True","False"]:
+        base_path = "/home/davide/Desktop/synth_data/data/"
+        #TODO not a constant here!
+        n_f = "20"
+        print(n_f)
+        middle= "_F_"+n_f+"_TS_100_Positional_"
+        for generation_kinds in ["AutoRegressive","PseudoPeriodic","GaussianProcess"]:
+            #TODO reinsert "True" in the line below
+            for positional in ["False"]:
                 train_meta = np.load(os.path.join( base_path,"SimulatedTrainingMetaData_RareTime_"+generation_kinds+middle+positional+".npy"),allow_pickle=True).item()
                 test_meta =  np.load(os.path.join( base_path,"SimulatedTestingMetaData_RareTime_"+generation_kinds+middle+positional+".npy"),allow_pickle=True).item()
                 data[generation_kinds+"_positional_"+positional] = {
@@ -25,8 +28,10 @@ def load_data(data_name):
     elif data_name=="CMJ":
         base_path="data/CounterMovementJump/"
         name = "CounterMovementJump"
-        data["X_train"], data["y_train"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"))
-        data["X_test"], data["y_test"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"))
+        CMJ = {}
+        CMJ["X_train"], CMJ["y_train"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"))
+        CMJ["X_test"], CMJ["y_test"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"))
+        data["CMJ"] = CMJ
     elif data_name=="MP":
         pass
     else:
