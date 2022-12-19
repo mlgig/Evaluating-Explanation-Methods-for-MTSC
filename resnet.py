@@ -31,8 +31,7 @@ from utils.utils import calculate_metrics
 class Classifier_RESNET():
 
     # TODO delete every printing or model save
-    def __init__(self, output_directory, input_shape, nb_classes, verbose=False, build=True, load_weights=False):
-        self.output_directory = output_directory
+    def __init__(self, input_shape, nb_classes, verbose=False, build=True, load_weights=False):
         if build == True:
             self.model = self.build_model(input_shape, nb_classes)
             if (verbose == True):
@@ -44,7 +43,8 @@ class Classifier_RESNET():
                                         .replace('TSC_itr_augment_x_10', 'TSC_itr_10')
                                         + '/model_init.hdf5')
             else:
-                self.model.save_weights(self.output_directory + 'model_init.hdf5')
+                a=3
+                #self.model.save_weights(self.output_directory + 'model_init.hdf5')
         return
 
     def build_model(self, input_shape, nb_classes):
@@ -123,17 +123,16 @@ class Classifier_RESNET():
                       metrics=['accuracy'])
 
         reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=50, min_lr=0.0001)
+        earlyStopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',  patience=7, restore_best_weights=True)
 
         #file_path = self.output_directory + 'best_model.hdf5'
-
         #model_checkpoint = keras.callbacks.ModelCheckpoint(filepath=file_path, monitor='loss',save_best_only=True)
-        earlyStopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',  patience=7, restore_best_weights=True)
 
         self.callbacks = [reduce_lr, earlyStopping]
 
         return model
 
-    def fit(self, x_train, y_train, x_val, y_val, y_true,nb_epochs):
+    def fit(self, x_train, y_train, x_val, y_val,nb_epochs):
         if not tf.test.is_gpu_available:
             print('error')
             exit()
@@ -143,29 +142,7 @@ class Classifier_RESNET():
 
         hist = self.model.fit(x_train, y_train, batch_size=mini_batch_size, epochs=nb_epochs,
                               verbose=self.verbose, validation_data=(x_val, y_val), callbacks=self.callbacks)
-        # TODO check the following code
-        print("final accuracy is ",hist.history['val_accuracy'][-1]," best one was at iteration "
-             ,np.argmax(hist.history['val_accuracy'])," accuracy was ",np.max(hist.history['val_accuracy']))
-        a=2
-        """
-        self.model.save(self.output_directory + 'last_model.hdf5')
-
-        y_pred = self.predict(x_val, y_true, x_train, y_train, y_val,
-                              return_df_metrics=False)
-
-        # save predictions
-        np.save(self.output_directory + 'y_pred.npy', y_pred)
-
-        # convert the predicted from binary to integer
-        y_pred = np.argmax(y_pred, axis=1)
-
-        df_metrics = save_logs(self.output_directory, hist, y_pred, y_true, duration)
-
-        keras.backend.clear_session()
-
-        return df_metrics
-"""
-        return
+        return hist
 
     # TODO do I really need a predict?
     def predict(self, x_test, y_true, return_df_metrics=True):
