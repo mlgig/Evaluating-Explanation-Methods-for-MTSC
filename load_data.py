@@ -5,12 +5,12 @@ import os
 def load_data(data_name):
     data = {}
     if data_name=="synth":
-        base_path = "/home/davide/Desktop/synth_data/data/"
+        base_path = "/home/davide/Desktop/synth_new/data/"
         #TODO not a constant here!
         n_f = "20"
         print(n_f)
         middle= "_F_"+n_f+"_TS_100_Positional_"
-        for generation_kinds in ["AutoRegressive","PseudoPeriodic","GaussianProcess"]:
+        for generation_kinds in ["AutoRegressive","PseudoPeriodic"]:#,"GaussianProcess"]:
             #TODO reinsert "True" in the line below
             for positional in ["False"]:
                 train_meta = np.load(os.path.join( base_path,"SimulatedTrainingMetaData_RareTime_"+generation_kinds+middle+positional+".npy"),allow_pickle=True).item()
