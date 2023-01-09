@@ -22,5 +22,5 @@ def convert2tensor(data):
             new_data.append([])
             for j in range(dims[1]):
                 new_data[-1].append(data.values[i][j])
-
-        return tf.reshape( tf.constant(new_data),(dims[0],-1,dims[1]) )
+        return  tf.constant(new_data)
+        #return tf.reshape( tf.constant(new_data),(dims[0],-1,dims[1]) )

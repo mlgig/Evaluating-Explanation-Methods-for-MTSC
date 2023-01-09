@@ -8,7 +8,7 @@ from utilities import convert2one_hot, convert2tensor
 
 
 def main():
-    all_data = load_data("synth")
+    all_data = load_data("CMJ")
 
     for dataset in all_data.keys():
         print("dataset ",dataset)
@@ -17,7 +17,7 @@ def main():
         # temp main for getting accuracy using synth datasets
         acc_res,acc_mini,acc_MrFs, acc_MrClf = [],[],[],[]
 
-        n_run = 5
+        n_run = 1
 
         for _ in range(n_run):
             # rocket

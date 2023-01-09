@@ -25,7 +25,7 @@ def load_data(data_name):
         base_path="data/CounterMovementJump/"
         name = "CounterMovementJump"
         CMJ = {}
-        CMJ["X_train"], CMJ["y_train"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"))
+        CMJ["X_train"], CMJ["y_train"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TRAIN.arff"))
         CMJ["X_test"], CMJ["y_test"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"))
         data["CMJ"] = CMJ
     elif data_name=="MP":
