@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 import tensorflow as tf
-
+import torch
 def convert2one_hot(y_train,y_test):
     enc = OneHotEncoder(categories='auto')
     enc.fit(np.concatenate((y_train, y_test), axis=0).reshape(-1, 1))
@@ -24,3 +24,7 @@ def convert2tensor(data):
                 new_data[-1].append(data.values[i][j])
         return  tf.constant(new_data)
         #return tf.reshape( tf.constant(new_data),(dims[0],-1,dims[1]) )
+
+def convert2Torchtensor(inputs,lables):
+    inputs = np.transpose(inputs,(0,2,1))
+    return torch.from_numpy(inputs),torch.from_numpy(lables)
