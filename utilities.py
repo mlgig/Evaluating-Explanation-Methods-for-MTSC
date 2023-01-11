@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 import tensorflow as tf
 
+# TODO let see what I can eliminate/need to change here
 def convert2one_hot(y_train,y_test):
     enc = OneHotEncoder(categories='auto')
     enc.fit(np.concatenate((y_train, y_test), axis=0).reshape(-1, 1))
