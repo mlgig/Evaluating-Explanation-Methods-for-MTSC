@@ -13,7 +13,7 @@ class myDataset(Dataset):
     files = []
     image_names = []
 
-    def __init__(self, X,y):
+    def __init__(self, X,y, device):
         """
         Args:
             root_dir (string): Directory with all the images.
@@ -21,10 +21,9 @@ class myDataset(Dataset):
                 on a sample.
         """
 
+        #TODO Need to do it train and test together!
         encoder = OneHotEncoder(categories='auto', sparse=False)
         y_oneHot = encoder.fit_transform(np.expand_dims(y, axis=-1))
-
-        device = device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.X= torch.from_numpy(X).to(device)
         self.y= torch.Tensor(y_oneHot).to(device)

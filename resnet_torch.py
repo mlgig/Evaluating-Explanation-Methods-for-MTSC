@@ -57,33 +57,31 @@ class ResNetBaseline(nn.Module):
 
         optimizer=torch.optim.Adam(self.parameters(),lr=learning_rate)
 
+
+        # TODO early stopping using these variables and patience argument
         best_val_loss = np.inf
         best_val_acc = 0
         patience_counter = 0
         best_state_dic = None
 
+        train_loss_hist = []
         for epoch in range(num_epochs):
             epoch_train_loss = []
             for  X_train,y_train in train_dataloader:
 
                 optimizer.zero_grad()
-                output = self(X_train)
+                train_output = self(X_train)
 
                 if y_train.shape[-1]==2:
-                    train_loss = F.binary_cross_entropy_with_logits(
-                        output, y_train.float(), reduction='mean'
-                    )
-
+                    train_loss = F.binary_cross_entropy_with_logits(train_output, y_train.float(), reduction='mean')
                 else:
-                    train_loss = F.cross_entropy(
-                        output,y_train.argmax(dim=-1), reduction='mean')
+                    train_loss = F.cross_entropy( train_output,y_train.argmax(dim=-1), reduction='mean')
+
                 epoch_train_loss.append(train_loss.item())
                 train_loss.backward()
                 optimizer.step()
 
-            #TODO do it properly
-            print("train loss", epoch_train_loss)
-            #self.train_loss.append(np.mean(epoch_train_loss))
+            train_loss_hist.append(np.mean(epoch_train_loss))
 
             epoch_val_loss = []
             #self.model.eval()
@@ -91,23 +89,21 @@ class ResNetBaseline(nn.Module):
             pred_list = []
 
             # validation step
-            for  X_val,y_val in test_dataloader:
+            for X_val,y_val in test_dataloader:
                 with torch.no_grad():
-                    output = self(X_val)
+                    val_output = self(X_val)
                     if y_val.shape[-1]==2:
-                        val_loss = F.binary_cross_entropy_with_logits(
-                            output, y_val.float(), reduction='mean'
-                        ).item()
+                        val_loss = F.binary_cross_entropy_with_logits(val_output, y_val.float(), reduction='mean').item()
                     else:
-                        val_loss = F.cross_entropy(output,
-                                                   y_val.argmax(dim=-1), reduction='mean').item()
+                        val_loss = F.cross_entropy(val_output,y_val.argmax(dim=-1), reduction='mean').item()
                     epoch_val_loss.append(val_loss)
 
+            #TODO can I improve the validation process?
                     true_list.append(y_val.cpu().numpy())
-                    preds = self(X_val)
-                    preds=torch.softmax(preds,dim=-1)
+                    preds=torch.softmax(self(X_val),dim=-1)
                     pred_list.append(preds.cpu().numpy())
             true_np,preds_np = np.concatenate(true_list), np.concatenate(pred_list)
+
             true_np = np.argmax(true_np,axis=-1)
             preds_np= np.argmax(preds_np,axis=-1)
             val_acc = accuracy_score(true_np,preds_np)
@@ -142,6 +138,7 @@ class ResNetBaseline(nn.Module):
             torch.save(self.model,savepath)
         """
 
+    #TODO do i really need this function?
     def evaluate(self,):
         data = LocalDataLoader(self.datapath,self.ds)
         test_loader,_ = data.get_loaders(mode='test')
