@@ -71,7 +71,7 @@ class ResNetBaseline(nn.Module):
         for epoch in range(num_epochs):
             epoch_train_loss = []
             for i in range(1):
-                X_train,y_train=torch.Tensor( data['X_train']), torch.Tensor( y_train )
+                X_train,y_train=torch.from_numpy( data['X_train']), torch.Tensor( y_train )
                 #TODO device from main
                 device="cuda"
                 X_train,y_train = X_train.to(device),y_train.to(device)
@@ -101,7 +101,7 @@ class ResNetBaseline(nn.Module):
 
             # validation step
             for i in range(1):
-                X_val, y_val = torch.Tensor(data['X_test']).to(device) ,  torch.Tensor(y_val).to(device),
+                X_val, y_val = torch.from_numpy(data['X_test']).to(device) ,  torch.Tensor(y_val).to(device),
                 with torch.no_grad():
                     output = self(X_val)
                     if y_val.shape[-1]==2:

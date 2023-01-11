@@ -24,7 +24,7 @@ def main():
         #TODO improve cuda, nb_classes from data
         device = "cuda"
         nb_classes = 2
-        model = ResNetBaseline(in_channels=100, num_pred_classes=nb_classes).to(device)
+        model = ResNetBaseline(in_channels=100, num_pred_classes=nb_classes).double().to(device)
         model.fit(data)
 
 
