@@ -52,7 +52,7 @@ class ResNetBaseline(nn.Module):
         x = self.layers(x)
         return self.final(x.mean(dim=-1))
 
-    def fit(self, data, batch_size=64,num_epochs=100,
+    def fit(self, train_dataloader, test_dataloader ,num_epochs=100,
             learning_rate=0.01,patience=20,save_best_model=True):
 
         optimizer=torch.optim.Adam(self.parameters(),lr=learning_rate)
@@ -62,19 +62,10 @@ class ResNetBaseline(nn.Module):
         patience_counter = 0
         best_state_dic = None
 
-
-        # TODO move conversion to one-hot , move also conversion to torch tensor?
-        encoder = OneHotEncoder(categories='auto', sparse=False)
-        y_train = encoder.fit_transform(np.expand_dims(data['y_train'], axis=-1))
-        y_val = encoder.transform(np.expand_dims(data['y_test'], axis=-1))
-
         for epoch in range(num_epochs):
             epoch_train_loss = []
-            for i in range(1):
-                X_train,y_train=torch.from_numpy( data['X_train']), torch.Tensor( y_train )
-                #TODO device from main
-                device="cuda"
-                X_train,y_train = X_train.to(device),y_train.to(device)
+            for  X_train,y_train in train_dataloader:
+
                 optimizer.zero_grad()
                 output = self(X_train)
 
@@ -100,8 +91,7 @@ class ResNetBaseline(nn.Module):
             pred_list = []
 
             # validation step
-            for i in range(1):
-                X_val, y_val = torch.from_numpy(data['X_test']).to(device) ,  torch.Tensor(y_val).to(device),
+            for  X_val,y_val in test_dataloader:
                 with torch.no_grad():
                     output = self(X_val)
                     if y_val.shape[-1]==2:

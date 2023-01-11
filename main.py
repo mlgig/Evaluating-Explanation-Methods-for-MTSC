@@ -6,6 +6,9 @@ from resnet import Classifier_RESNET
 import numpy as np
 from utilities import convert2one_hot, convert2tensor
 from resnet_torch import  ResNetBaseline
+from pytorch_dataset import myDataset
+from torch.utils.data import DataLoader
+
 
 def main():
     all_data = load_data("synth")
@@ -14,6 +17,7 @@ def main():
         print("dataset ",dataset)
         data = all_data[dataset]
 
+
         # temp main for getting accuracy using synth datasets
         acc_res,acc_mini,acc_MrFs, acc_MrClf = [],[],[],[]
 
@@ -21,11 +25,14 @@ def main():
 
 
 
+        train_dataloader = DataLoader(myDataset(data["X_train"],data["y_train"]), batch_size=64, shuffle=True)
+        test_dataloader = DataLoader(myDataset(data["X_test"],data["y_test"]), batch_size=64, shuffle=True)
+
         #TODO improve cuda, nb_classes from data
         device = "cuda"
         nb_classes = 2
         model = ResNetBaseline(in_channels=100, num_pred_classes=nb_classes).double().to(device)
-        model.fit(data)
+        model.fit(train_dataloader, test_dataloader)
 
 
 

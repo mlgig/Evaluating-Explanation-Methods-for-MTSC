@@ -1,14 +1,10 @@
 from torch.utils.data import Dataset
-import os
-from PIL import Image
-import torchvision.transforms.functional as TF
-from read_mha import *
-from tree import create_tree
 from sklearn.preprocessing import OneHotEncoder
 
 
 import numpy as np
 import torch
+
 
 class myDataset(Dataset):
 
@@ -17,7 +13,7 @@ class myDataset(Dataset):
     files = []
     image_names = []
 
-    def __init__(self, data):
+    def __init__(self, X,y):
         """
         Args:
             root_dir (string): Directory with all the images.
@@ -26,48 +22,15 @@ class myDataset(Dataset):
         """
 
         encoder = OneHotEncoder(categories='auto', sparse=False)
-        y_train = encoder.fit_transform(np.expand_dims(data['y_train'], axis=-1))
-        y_val = encoder.transform(np.expand_dims(data['y_test'], axis=-1))
+        y_oneHot = encoder.fit_transform(np.expand_dims(y, axis=-1))
 
-        self.X_train,=
-        self.y_train = torch.Tensor(y_train)
-        self.X_test, =
-        self.y_test =  torch.Tensor(y_val)
-        self.image_dir = image_dir
-        self.transform = transform
-        for file in os.listdir(tree_dir):
-            self.files.append(file)
-        self.files.sort()
-        for i in range(0,len(self.files),2):
-            name = self.files[i]
-            self.image_names.append(name.split("__")[0])
+        device = device = "cuda" if torch.cuda.is_available() else "cpu"
 
+        self.X= torch.from_numpy(X).to(device)
+        self.y= torch.Tensor(y_oneHot).to(device)
 
     def __len__(self):
-        return len(self.image_names)
+        return self.X.shape[0]
 
     def __getitem__(self, idx):
-
-        #open image
-        print (self.image_names[idx])
-        img = Image.open(self.image_dir+"/"+self.image_names[idx]+".jpg")
-        x=TF.to_tensor(img)
-        x.unsqueeze_(0)
-        img = img.resize((299,299))
-        x2=TF.to_tensor(img)
-        x2.unsqueeze_(0)
-        #open map
-        map= load_itk(self.tree_dir+"/"+self.image_names[idx]+"__segmentation.mha")
-
-        #open tree file
-        tree = create_tree(self.tree_dir+"/"+self.image_names[idx]+"__segmentation.sif")
-
-        dict = {
-            "image" : x,
-            "map" : map,
-            "tree" : tree,
-            "name" : self.image_names[idx],
-            "image_resized" : x2
-        }
-
-        return
+        return self.X[idx], self.y[idx]
