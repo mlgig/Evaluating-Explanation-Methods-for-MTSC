@@ -2,37 +2,46 @@ from load_data import load_data
 from sktime.classification.shapelet_based import MrSEQLClassifier
 from sktime.transformations.panel.rocket import Rocket
 from sklearn.linear_model import RidgeClassifierCV
-from resnet import Classifier_RESNET
+#from resnet import Classifier_RESNET
 import numpy as np
-from utilities import convert2one_hot, convert2tensor
+#from utilities import convert2one_hot, convert2tensor
 from resnet_torch import  ResNetBaseline
 from pytorch_dataset import myDataset
 from torch.utils.data import DataLoader
 import torch
+from sklearn.preprocessing import OneHotEncoder
+
 
 def main():
-    all_data = load_data("MP")
+    # TODO return just one dictionary
+    all_data = load_data("synth")
+
 
     for dataset in all_data.keys():
         print("dataset ",dataset)
+        # TODO return just one dictionary
         data = all_data[dataset]
-
 
         # temp main for getting accuracy using synth datasets
         acc_res,acc_mini,acc_MrFs, acc_MrClf = [],[],[],[]
-
         n_run = 1
 
-        device = device = "cuda" if torch.cuda.is_available() else "cpu"
-        train_dataloader = DataLoader(myDataset(data["X_train"], data["y_train"], device), batch_size=64, shuffle=True)
-        test_dataloader = DataLoader(myDataset(data["X_test"], data["y_test"], device ), batch_size=64, shuffle=True)
+        #TODO group the following two blocks in one function
+        # transform label
+        encoder = OneHotEncoder(categories='auto', sparse=False)
+        y_train = encoder.fit_transform(np.expand_dims( data["y_train"], axis=-1))
+        y_test = encoder.transform(np.expand_dims(data["y_test"], axis=-1))
 
+        # get dataset loaders
+        device = device = "cuda" if torch.cuda.is_available() else "cpu"
+        train_dataloader = DataLoader(myDataset(data["X_train"], y_train, device), batch_size=64, shuffle=True)
+        test_dataloader = DataLoader(myDataset(data["X_test"], y_test, device ), batch_size=64, shuffle=True)
+
+        #train
         #TODO improve cuda, nb_classes from data
         nb_classes = 2
-        model = ResNetBaseline(in_channels=100, num_pred_classes=nb_classes).double().to(device)
+        model = ResNetBaseline(in_channels=20, num_pred_classes=nb_classes).double().to(device)
         model.fit(train_dataloader, test_dataloader,num_epochs=20)
-
-
 
         """
         for _ in range(n_run):
@@ -74,7 +83,7 @@ def main():
             model = MrSEQLClassifier(seql_mode="clf",symrep=['sfa'])
             model.fit(data["X_train"],data["y_train"])
             acc_MrClf.append( model.score(data["X_test"],data["y_test"]) )
-        print("\t mrSeqlClf accuracy is ", np.sum(acc_MrClf)/n_run)
+        print("\t mrSeqlClf accuracy is ", np.sum(acc_MrClf)/n_run,"\n\n\n\n")
 
 
 if __name__ == "__main__" :

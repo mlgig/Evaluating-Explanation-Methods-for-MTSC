@@ -21,12 +21,9 @@ class myDataset(Dataset):
                 on a sample.
         """
 
-        #TODO Need to do it train and test together!
-        encoder = OneHotEncoder(categories='auto', sparse=False)
-        y_oneHot = encoder.fit_transform(np.expand_dims(y, axis=-1))
 
-        self.X= torch.from_numpy(X).to(device)
-        self.y= torch.Tensor(y_oneHot).to(device)
+        self.X= torch.from_numpy( np.transpose(X,(0,2,1)) ).to(device)
+        self.y= torch.Tensor(y).to(device)
 
     def __len__(self):
         return self.X.shape[0]

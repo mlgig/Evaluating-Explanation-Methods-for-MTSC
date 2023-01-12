@@ -8,12 +8,6 @@ import torch.utils.data as utils
 import pickle as pkl
 
 
-
-from sklearn.preprocessing import OneHotEncoder
-
-
-
-
 from sklearn.metrics import accuracy_score
 
 class ResNetBaseline(nn.Module):
@@ -53,7 +47,7 @@ class ResNetBaseline(nn.Module):
         return self.final(x.mean(dim=-1))
 
     def fit(self, train_dataloader, test_dataloader ,num_epochs=100,
-            learning_rate=0.01,patience=20,save_best_model=True):
+            learning_rate=0.001,patience=20,save_best_model=True):
 
         optimizer=torch.optim.Adam(self.parameters(),lr=learning_rate)
 
@@ -68,7 +62,6 @@ class ResNetBaseline(nn.Module):
         for epoch in range(num_epochs):
             epoch_train_loss = []
             for  X_train,y_train in train_dataloader:
-
                 optimizer.zero_grad()
                 train_output = self(X_train)
 
