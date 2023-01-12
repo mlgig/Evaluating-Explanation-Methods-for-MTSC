@@ -5,13 +5,11 @@ from sklearn.linear_model import RidgeClassifierCV
 import numpy as np
 from resnet_torch import  ResNetBaseline
 from utilities import *
-from torch.utils.data import DataLoader
-import torch
-from sklearn.preprocessing import OneHotEncoder
 
 
+# TODO improve imports aka not import torch or numpy etc. etc.
 def main():
-    all_data = load_data("MP")
+    all_data = load_data("synth")
 
 
     for dataset in all_data.keys():

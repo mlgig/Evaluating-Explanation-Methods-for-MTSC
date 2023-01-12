@@ -1,7 +1,3 @@
-import numpy as np
-from sklearn.preprocessing import OneHotEncoder
-import tensorflow as tf
-import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from sklearn.preprocessing import OneHotEncoder
@@ -9,17 +5,6 @@ import pandas as pd
 import numpy as np
 import torch
 
-
-# TODO let see what I can eliminate/need to change here
-def convert2one_hot(y_train,y_test):
-    enc = OneHotEncoder(categories='auto')
-    enc.fit(np.concatenate((y_train, y_test), axis=0).reshape(-1, 1))
-    y_train = enc.transform(y_train.reshape(-1, 1)).toarray()
-    y_test = enc.transform(y_test.reshape(-1, 1)).toarray()
-
-    # save orignal y because later we will use binary
-    y_true = np.argmax(y_test, axis=1)
-    return y_train,y_test,y_true
 
 def convert2tensor(data):
     dims = data.shape
@@ -31,9 +16,6 @@ def convert2tensor(data):
         new_data.append(tmp)
 
     return  torch.tensor(new_data, dtype=torch.float64)
-
-
-
 
 class myDataset(Dataset):
     def __init__(self, X,y, device):
@@ -52,13 +34,6 @@ class myDataset(Dataset):
 
     def get_n_channels(self):
         return self.X.shape[1]
-
-
-
-
-
-
-
 
 def transform_data4ReseNet(data):
     # get one hot encoder

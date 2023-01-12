@@ -1,14 +1,9 @@
-import os
 import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
-import torch.optim as optim
-import torch.utils.data as utils
-import pickle as pkl
-
-
 from sklearn.metrics import accuracy_score
+
 
 class ResNetBaseline(nn.Module):
     """A PyTorch implementation of the ResNet Baseline
@@ -184,21 +179,6 @@ class ResNetBlock(nn.Module):
         if self.match_channels:
             return self.layers(x) + self.residual(x)
         return self.layers(x)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class ConvBlock(nn.Module):
