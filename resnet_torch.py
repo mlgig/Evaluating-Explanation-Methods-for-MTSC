@@ -105,6 +105,7 @@ class ResNetBaseline(nn.Module):
             #self.val_loss.append(np.mean(epoch_val_loss))
 
 
+            # TODO save best model!
             """
             print(f'Epoch: {epoch + 1}, '
                   f'Train loss: {round(self.train_loss[-1], 4)}, '

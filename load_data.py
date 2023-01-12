@@ -22,6 +22,7 @@ def load_data(data_name):
                 del data[generation_kinds+"_positional_"+positional]["meta_train"]['Targets']
                 del data[generation_kinds+"_positional_"+positional]["meta_test"]['Targets']
     elif data_name=="CMJ":
+        # TODO replace nan with 0 values
         base_path="data/CounterMovementJump/"
         name = "CounterMovementJump"
         CMJ = {}
@@ -29,6 +30,8 @@ def load_data(data_name):
         CMJ["X_test"], CMJ["y_test"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"))
         data["CMJ"] = CMJ
     elif data_name=="MP":
+        #TODO V1.7 fULLuNNORMALIZED25xy
+        # also try the 8 variables
         #base_path="/home/davide/Downloads/PoseEstimation-20221206T155730Z-001/PoseEstimation/OpenPosev1.4/MP/FullUnnormalized14-OpenPosev14"
         base_path="/home/davide/Downloads/PoseEstimation-20221206T155730Z-001/PoseEstimation/OpenPosev1.7/MP/FullUnnormalized25/"
         MP = {}
