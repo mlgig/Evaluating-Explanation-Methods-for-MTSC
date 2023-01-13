@@ -6,21 +6,21 @@ def load_data(data_name):
     data = {}
     if data_name=="synth":
         base_path = "./data/synth_data/data/"
-        middle= "_F_20_TS_100_Positional_"
+        middle= "_F_20_TS_100_Moving_"
         for generation_kinds in ["AutoRegressive","PseudoPeriodic","GaussianProcess"]:
-            for positional in ["False","True"]:
-                train_meta = np.load(os.path.join( base_path,"SimulatedTrainingMetaData_RareTime_"+generation_kinds+middle+positional+".npy"),allow_pickle=True).item()
-                test_meta =  np.load(os.path.join( base_path,"SimulatedTestingMetaData_RareTime_"+generation_kinds+middle+positional+".npy"),allow_pickle=True).item()
-                data[generation_kinds+"_positional_"+positional] = {
-                    "X_train" : np.load(os.path.join( base_path,"SimulatedTrainingData_RareTime_"+generation_kinds+middle+positional+".npy")),
-                    "X_test" : np.load(os.path.join( base_path,"SimulatedTestingData_RareTime_"+generation_kinds+middle+positional+".npy")),
+            for moving in ["True"]:
+                train_meta = np.load(os.path.join( base_path,"SimulatedTrainingMetaData_RareTime_"+generation_kinds+middle+moving+".npy"),allow_pickle=True).item()
+                test_meta =  np.load(os.path.join( base_path,"SimulatedTestingMetaData_RareTime_"+generation_kinds+middle+moving+".npy"),allow_pickle=True).item()
+                data[generation_kinds+"_moving_"+moving] = {
+                    "X_train" : np.load(os.path.join( base_path,"SimulatedTrainingData_RareTime_"+generation_kinds+middle+moving+".npy")),
+                    "X_test" : np.load(os.path.join( base_path,"SimulatedTestingData_RareTime_"+generation_kinds+middle+moving+".npy")),
                     "y_train" : train_meta['Targets'],
                     "y_test" : test_meta['Targets'],
                     "meta_train" : train_meta,
                     "meta_test" : test_meta,
                 }
-                del data[generation_kinds+"_positional_"+positional]["meta_train"]['Targets']
-                del data[generation_kinds+"_positional_"+positional]["meta_test"]['Targets']
+                del data[generation_kinds+"_moving_"+moving]["meta_train"]['Targets']
+                del data[generation_kinds+"_moving_"+moving]["meta_test"]['Targets']
     elif data_name=="CMJ":
         # TODO replace nan with 0 values
         base_path="data/CounterMovementJump/"
@@ -30,8 +30,10 @@ def load_data(data_name):
         CMJ["X_test"], CMJ["y_test"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"))
         data["CMJ"] = CMJ
     elif data_name=="MP":
-        #TODO V1.7 fULLuNNORMALIZED25xy
-        # also try the 8 variables
+        # TODO V1.7 fULLuNNORMALIZED25xy and try the 8 variables
+        # From the 25 body parts dataset, you can load it and only select the 8 body parts Ashish uses in the paper,
+        # ie wrists, elbows, shoulders and hips. Then just work with this smaller dataframe
+
         #base_path="/home/davide/Downloads/PoseEstimation-20221206T155730Z-001/PoseEstimation/OpenPosev1.4/MP/FullUnnormalized14-OpenPosev14"
         base_path="/home/davide/Downloads/PoseEstimation-20221206T155730Z-001/PoseEstimation/OpenPosev1.7/MP/FullUnnormalized25/"
         MP = {}

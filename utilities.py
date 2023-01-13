@@ -45,8 +45,8 @@ def transform_data4ReseNet(data):
     device = device = "cuda" if torch.cuda.is_available() else "cpu"
     train = myDataset(data["X_train"], y_train, device)
     test =  myDataset(data["X_test"], y_test, device)
-    train_dataloader = DataLoader(train, batch_size=64, shuffle=True)
-    test_dataloader = DataLoader(test, batch_size=64, shuffle=True)
+    train_dataloader = DataLoader(train, batch_size=100, shuffle=True)
+    test_dataloader = DataLoader(test, batch_size=100, shuffle=True)
 
     # get how many classes and channels
     n_channels = train.get_n_channels()

@@ -42,25 +42,22 @@ class ResNetBaseline(nn.Module):
         return self.final(x.mean(dim=-1))
 
     def fit(self, train_dataloader, test_dataloader ,num_epochs=100,
-            learning_rate=0.001,patience=20,save_best_model=True):
+            learning_rate=0.001,patience=10,save_best_model=True):
 
         optimizer=torch.optim.Adam(self.parameters(),lr=learning_rate)
-
-
-        # TODO early stopping using these variables and patience argument
-        best_val_loss = np.inf
-        best_val_acc = 0
         patience_counter = 0
         best_state_dic = None
-
+        val_acc_hist = []
         train_loss_hist = []
-        for epoch in range(num_epochs):
+
+        for current_epoch in range(num_epochs):
             epoch_train_loss = []
             for  X_train,y_train in train_dataloader:
                 optimizer.zero_grad()
                 train_output = self(X_train)
 
                 if y_train.shape[-1]==2:
+                    # TODO check at this!
                     train_loss = F.binary_cross_entropy_with_logits(train_output, y_train.float(), reduction='mean')
                 else:
                     train_loss = F.cross_entropy( train_output,y_train.argmax(dim=-1), reduction='mean')
@@ -95,7 +92,21 @@ class ResNetBaseline(nn.Module):
             true_np = np.argmax(true_np,axis=-1)
             preds_np= np.argmax(preds_np,axis=-1)
             val_acc = accuracy_score(true_np,preds_np)
+            val_acc_hist.append(val_acc)
+            # update best loss or increment counter
             print("loss ", val_loss, " accuracy", val_acc)
+            best_val_acc = max(val_acc_hist)
+            if best_val_acc>val_acc:
+                val_acc_hist.append(val_acc)
+                patience_counter+=1
+                if patience_counter==patience:
+                    #TODO save model
+                    print("stopping train")
+                    return best_val_acc
+            else:
+                val_acc_hist.append(val_acc)
+                patience_counter=0
+
             #self.val_acc.append(val_acc)
             #self.val_loss.append(np.mean(epoch_val_loss))
 
