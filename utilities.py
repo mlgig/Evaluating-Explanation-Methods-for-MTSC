@@ -31,10 +31,13 @@ class myDataset(Dataset):
         else:
             raise ValueError("dataset input format not recognized")
 
-        if y.dtype==np.dtype("U4"):
+        if y.dtype==np.dtype("U4") or y.dtype==np.dtype("U1"):
+            # that is the MP dataset
             le = preprocessing.LabelEncoder()
             targets = le.fit_transform(y)
             self.y= torch.tensor(targets, dtype=torch.uint8).to(device)
+        elif y.dtype==np.int64:
+            self.y= torch.tensor(y, dtype=torch.uint8).to(device)
         #elif:
         #    a = 3
             #TODO IMPLEMENT
@@ -55,12 +58,12 @@ def transform_data4ReseNet(data):
     device = device = "cuda" if torch.cuda.is_available() else "cpu"
     train = myDataset(data["X_train"], data["y_train"], device)
     test =  myDataset(data["X_test"], data["y_test"], device)
-    train_dataloader = DataLoader(train, batch_size=100, shuffle=True)
-    test_dataloader = DataLoader(test, batch_size=100, shuffle=True)
+    train_dataloader = DataLoader(train, batch_size=64, shuffle=True)
+    test_dataloader = DataLoader(test, batch_size=64, shuffle=True)
 
     # get how many classes and channels
     n_channels = train.get_n_channels()
     assert train.get_n_channels()==test.get_n_channels()
-    n_classes = 4
+    n_classes = np.unique(data["y_train"]).size
 
     return test_dataloader, train_dataloader,n_channels,n_classes, device

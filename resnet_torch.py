@@ -35,7 +35,11 @@ class ResNetBaseline(nn.Module):
             ResNetBlock(in_channels=mid_channels * 2, out_channels=mid_channels * 2),
 
         ])
-        self.final = nn.Linear(mid_channels * 2, num_pred_classes)
+
+        if num_pred_classes==2:
+            self.final = nn.Linear(mid_channels * 2, 1)
+        else:
+            self.final = nn.Linear(mid_channels * 2, num_pred_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore
         x = self.layers(x)
@@ -44,28 +48,30 @@ class ResNetBaseline(nn.Module):
     def fit(self, train_dataloader, test_dataloader ,num_epochs=100,
             learning_rate=0.001,patience=10,save_best_model=True):
 
-        optimizer=torch.optim.Adam(self.parameters(),lr=learning_rate)
+        # useful variables
         patience_counter = 0
         best_state_dic = None
         val_acc_hist = []
         train_loss_hist = []
 
+        # optimizer and loss
+        optimizer=torch.optim.Adam(self.parameters(),lr=learning_rate)
+        binary_case = (self.input_args['num_pred_classes']==2)
+        if binary_case:
+            loss_fn = nn.BCEWithLogitsLoss( reduction='mean')
+        else:
+            loss_fn = nn.CrossEntropyLoss( reduction='mean')
+
         for current_epoch in range(num_epochs):
             epoch_train_loss = []
+            # train loop
             for  X_train,y_train in train_dataloader:
                 optimizer.zero_grad()
                 train_output = self(X_train)
-
-                if y_train.shape[-1]==2:
-                    # TODO check at this!
-                    train_loss = F.binary_cross_entropy_with_logits(train_output, y_train.float(), reduction='mean')
-                else:
-                    train_loss = F.cross_entropy( train_output,y_train, reduction='mean')
-
+                train_loss = loss_fn(train_output, y_train.float().reshape(-1,1)) if binary_case else  loss_fn(train_output, y_train)
                 epoch_train_loss.append(train_loss.item())
                 train_loss.backward()
                 optimizer.step()
-
             train_loss_hist.append(np.mean(epoch_train_loss))
 
             epoch_val_loss = []
@@ -77,30 +83,28 @@ class ResNetBaseline(nn.Module):
             for X_val,y_val in test_dataloader:
                 with torch.no_grad():
                     val_output = self(X_val)
-                    if y_val.shape[-1]==2:
-                        val_loss = F.binary_cross_entropy_with_logits(val_output, y_val.float(), reduction='mean').item()
-                    else:
-                        val_loss = F.cross_entropy(val_output,y_val, reduction='mean').item()
+                    val_loss = loss_fn(val_output, y_val.float().reshape(-1,1)) if binary_case else loss_fn(val_output,y_val)
                     epoch_val_loss.append(val_loss)
 
-            #TODO can I improve the validation process?
+                    #TODO can I improve the validation process?
                     true_list.append(y_val.cpu().numpy())
-                    preds=torch.softmax(self(X_val),dim=-1)
+                    preds=torch.squeeze( torch.sigmoid(val_output).round() ) if binary_case \
+                        else torch.softmax(val_output,dim=-1)
                     pred_list.append(preds.cpu().numpy())
             true_np,preds_np = np.concatenate(true_list), np.concatenate(pred_list)
 
-            preds_np= np.argmax(preds_np,axis=-1)
+            # TODO Can I remove this line of code?
+            preds_np= np.argmax(preds_np,axis=-1) if not binary_case else preds_np
             val_acc = accuracy_score(true_np,preds_np)
             val_acc_hist.append(val_acc)
-            # update best loss or increment counter
-            print("train loss", train_loss_hist[-1], "loss ", val_loss, " accuracy", val_acc)
+            #print("train loss", train_loss_hist[-1], "val loss", val_loss, "accuracy", val_acc)
+            # early stopping
             best_val_acc = max(val_acc_hist)
             if best_val_acc>val_acc:
                 val_acc_hist.append(val_acc)
                 patience_counter+=1
                 if patience_counter==patience:
-                    #TODO save model
-                    print("stopping train")
+                    # TODO save model
                     return best_val_acc
             else:
                 val_acc_hist.append(val_acc)
