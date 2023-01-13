@@ -60,7 +60,7 @@ class ResNetBaseline(nn.Module):
                     # TODO check at this!
                     train_loss = F.binary_cross_entropy_with_logits(train_output, y_train.float(), reduction='mean')
                 else:
-                    train_loss = F.cross_entropy( train_output,y_train.argmax(dim=-1), reduction='mean')
+                    train_loss = F.cross_entropy( train_output,y_train, reduction='mean')
 
                 epoch_train_loss.append(train_loss.item())
                 train_loss.backward()
@@ -80,7 +80,7 @@ class ResNetBaseline(nn.Module):
                     if y_val.shape[-1]==2:
                         val_loss = F.binary_cross_entropy_with_logits(val_output, y_val.float(), reduction='mean').item()
                     else:
-                        val_loss = F.cross_entropy(val_output,y_val.argmax(dim=-1), reduction='mean').item()
+                        val_loss = F.cross_entropy(val_output,y_val, reduction='mean').item()
                     epoch_val_loss.append(val_loss)
 
             #TODO can I improve the validation process?
@@ -89,12 +89,11 @@ class ResNetBaseline(nn.Module):
                     pred_list.append(preds.cpu().numpy())
             true_np,preds_np = np.concatenate(true_list), np.concatenate(pred_list)
 
-            true_np = np.argmax(true_np,axis=-1)
             preds_np= np.argmax(preds_np,axis=-1)
             val_acc = accuracy_score(true_np,preds_np)
             val_acc_hist.append(val_acc)
             # update best loss or increment counter
-            print("loss ", val_loss, " accuracy", val_acc)
+            print("train loss", train_loss_hist[-1], "loss ", val_loss, " accuracy", val_acc)
             best_val_acc = max(val_acc_hist)
             if best_val_acc>val_acc:
                 val_acc_hist.append(val_acc)

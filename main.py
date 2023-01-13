@@ -9,7 +9,7 @@ from utilities import *
 
 # TODO improve imports aka not import torch or numpy etc. etc.
 def main():
-    all_data = load_data("synth")
+    all_data = load_data("MP")
 
 
     for dataset in all_data.keys():
@@ -24,7 +24,7 @@ def main():
         for _ in range(n_run):
             test_dataloader, train_dataloader, n_channels, n_classes, device = transform_data4ReseNet(data)
             model = ResNetBaseline(in_channels=n_channels, num_pred_classes=n_classes).double().to(device)
-            acc = model.fit(train_dataloader, test_dataloader,num_epochs=20,patience=5)
+            acc = model.fit(train_dataloader, test_dataloader,num_epochs=10,patience=3)
             acc_res.append(acc)
         print("\t resnet accuracy is ",np.sum(acc_res)/n_run, acc_res)
 
