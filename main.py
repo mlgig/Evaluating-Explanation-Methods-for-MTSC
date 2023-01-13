@@ -5,7 +5,7 @@ from sklearn.linear_model import RidgeClassifierCV
 import numpy as np
 from resnet_torch import  ResNetBaseline
 from utilities import *
-
+import timeit
 
 # TODO improve imports aka not import torch or numpy etc. etc.
 def main():
@@ -21,18 +21,21 @@ def main():
         n_run = 5
 
         # TODO try to increment batch size
+        starttime = timeit.default_timer()
         for _ in range(n_run):
             test_dataloader, train_dataloader, n_channels, n_classes, device = transform_data4ReseNet(data)
             model = ResNetBaseline(in_channels=n_channels, num_pred_classes=n_classes).double().to(device)
             acc = model.fit(train_dataloader, test_dataloader,num_epochs=20,patience=5)
             acc_res.append(acc)
-        print("\t resnet accuracy is ",np.sum(acc_res)/n_run, acc_res)
+        print("\t resnet accuracy is ",np.sum(acc_res)/n_run, acc_res," time was ", (timeit.default_timer() - starttime)/n_run)
 
         # TODO just for synth datasets
         train_set = np.transpose(data["X_train"],(0,2,1))
         test_set = np.transpose( data["X_test"],(0,2,1))
+
         print(train_set.shape,test_set.shape)
         # TODO convert to a DataFrame for synth data
+        starttime = timeit.default_timer()
         for _ in range(n_run):
             # rocket
             rocket = Rocket(normalise=False)
@@ -44,23 +47,40 @@ def main():
             cls = RidgeClassifierCV()
             cls.fit(X_train_trans,data["y_train"])
             acc_mini.append( cls.score(X_test_trans,data["y_test"]) )
-        print("\t rocket accuracy is ",np.sum(acc_mini)/n_run)
+        print("\t rocket accuracy is ",np.sum(acc_mini)/n_run," time was ", (timeit.default_timer() - starttime)/n_run)
 
-
+        starttime = timeit.default_timer()
         for _ in range(n_run):
             # TODO TRY sfa with MP
             #mrSeql
             model = MrSEQLClassifier(seql_mode="fs",symrep=['sax'])
             model.fit(train_set,data["y_train"])
             acc_MrFs.append( model.score(test_set,data["y_test"]) )
-        print("\t mrSeqlFs accuracy is ", np.sum(acc_MrFs)/n_run)
+        print("\t mrSeqlFs accuracy is ", np.sum(acc_MrFs)/n_run," time was ",  (timeit.default_timer() - starttime)/n_run)
 
+        starttime = timeit.default_timer()
         for _ in range(n_run):
-            #mrSeql
             model = MrSEQLClassifier(seql_mode="clf",symrep=['sax'])
             model.fit(train_set,data["y_train"])
             acc_MrClf.append( model.score(test_set,data["y_test"]) )
-        print("\t mrSeqlClf accuracy is ", np.sum(acc_MrClf)/n_run,"\n\n\n\n")
+        print("\t mrSeqlClf accuracy is ", np.sum(acc_MrClf)/n_run," time was ",  (timeit.default_timer() - starttime)/n_run)
+
+        starttime = timeit.default_timer()
+        for _ in range(n_run):
+            starttime = timeit.default_timer()
+            model = MrSEQLClassifier(seql_mode="fs",symrep=['sfa'])
+            model.fit(train_set,data["y_train"])
+            acc_MrFs.append( model.score(test_set,data["y_test"]) )
+        print("\t mrSeqlFs accuracy is ", np.sum(acc_MrFs)/n_run," time was ", (timeit.default_timer() - starttime)/n_run)
+
+        starttime = timeit.default_timer()
+        for _ in range(n_run):
+            starttime = timeit.default_timer()
+            model = MrSEQLClassifier(seql_mode="clf",symrep=['sfa'])
+            model.fit(train_set,data["y_train"])
+            acc_MrClf.append( model.score(test_set,data["y_test"]) )
+        print("\t mrSeqlClf accuracy is ", np.sum(acc_MrClf)/n_run," time was ",  (timeit.default_timer() - starttime)/n_run,"\n\n\n\n")
+
 
 
 
