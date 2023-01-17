@@ -3,9 +3,9 @@ from torch.utils.data import Dataset
 from sklearn.preprocessing import OneHotEncoder
 import pandas as pd
 import numpy as np
-import torch
 from sklearn import preprocessing
 import torch
+from scipy.interpolate import interp1d
 
 labels = ['cat', 'dog', 'mouse', 'elephant', 'pandas']
 le = preprocessing.LabelEncoder()
@@ -52,14 +52,14 @@ class myDataset(Dataset):
     def get_n_channels(self):
         return self.X.shape[1]
 
-def transform_data4ReseNet(data):
+def transform_data4ResNet(data,dataset_name):
 
     # get dataset loaders
     device = device = "cuda" if torch.cuda.is_available() else "cpu"
     train = myDataset(data["X_train"], data["y_train"], device)
     test =  myDataset(data["X_test"], data["y_test"], device)
-    train_dataloader = DataLoader(train, batch_size=64, shuffle=True)
-    test_dataloader = DataLoader(test, batch_size=64, shuffle=True)
+    train_dataloader = DataLoader(train, batch_size=24, shuffle=True) if dataset_name=="CMJ" else DataLoader(train, batch_size=64, shuffle=True)
+    test_dataloader = DataLoader(test, batch_size=64, shuffle=False)
 
     # get how many classes and channels
     n_channels = train.get_n_channels()
@@ -68,3 +68,22 @@ def transform_data4ReseNet(data):
 
     return test_dataloader, train_dataloader,n_channels,n_classes, device
 
+def interpolation(x,max_length,n_var):
+    n = len(x)
+    interpolated_data = np.zeros((n, max_length, n_var), dtype=np.float64)
+
+    for i in range(n):
+        mts = x[i]
+        curr_length = mts[0].size
+        idx = np.array(range(curr_length))
+        idx_new = np.linspace(0, idx.max(), max_length)
+        # TODO count for the pids
+        # pid = mts[0][-1]
+        for j in range(n_var):
+            ts = mts[j]
+            # linear interpolation
+            f = interp1d(idx, ts, kind='cubic')
+            new_ts = f(idx_new)
+            interpolated_data[i, :, j] = new_ts
+        # interpolated_data[i, :, -1] = pid
+    return interpolated_data

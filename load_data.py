@@ -1,4 +1,5 @@
 from sktime.utils.data_io  import load_from_arff_to_dataframe, load_from_tsfile_to_dataframe
+from utilities import interpolation
 import numpy as np
 import os
 
@@ -26,8 +27,8 @@ def load_data(data_name):
         base_path="data/CounterMovementJump/"
         name = "CounterMovementJump"
         CMJ = {}
-        CMJ["X_train"], CMJ["y_train"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TRAIN.arff"))
-        CMJ["X_test"], CMJ["y_test"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"))
+        CMJ["X_train"], CMJ["y_train"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TRAIN.arff"),replace_missing_vals_with='0')
+        CMJ["X_test"], CMJ["y_test"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"),replace_missing_vals_with='0')
         data["CMJ"] = CMJ
     elif data_name=="MP":
         # TODO V1.7 fULLuNNORMALIZED25xy and try the 8 variables
@@ -35,12 +36,21 @@ def load_data(data_name):
         # ie wrists, elbows, shoulders and hips. Then just work with this smaller dataframe
 
         #base_path="/home/davide/Downloads/PoseEstimation-20221206T155730Z-001/PoseEstimation/OpenPosev1.4/MP/FullUnnormalized14-OpenPosev14"
-        base_path="/home/davide/Downloads/PoseEstimation-20221206T155730Z-001/PoseEstimation/OpenPosev1.7/MP/FullUnnormalized25/"
+        base_path="/home/davide/Downloads/PoseEstimation-20221206T155730Z-001/PoseEstimation/OpenPosev1.4/MP/FullUnnormalized25/"
+        base_path="/home/davide/Downloads/PoseEstimation-20221206T155730Z-001/PoseEstimation/OpenPosev1.7/MP/Unnormalized8VariableLength"
+
         MP = {}
         #MP["X_train"], MP["y_train"] = load_from_tsfile_to_dataframe(os.path.join(base_path,"TRAIN_X.ts"))
         #MP["X_test"], MP["y_test"] = load_from_tsfile_to_dataframe(os.path.join(base_path,"TEST_X.ts"))
-        MP["X_train"], MP["y_train"] = load_from_tsfile_to_dataframe(os.path.join(base_path,"TRAIN_default_X.ts"))
-        MP["X_test"], MP["y_test"] = load_from_tsfile_to_dataframe(os.path.join(base_path,"TEST_default_X.ts"))
+
+
+        X_train, y_train = load_from_tsfile_to_dataframe(os.path.join(base_path,"TRAIN_default_X.ts"))
+        X_test, y_test = load_from_tsfile_to_dataframe(os.path.join(base_path,"TEST_default_X.ts"))
+        MP["X_train"] = interpolation(X_train.values.tolist(),161,8)
+        MP["X_test"] = interpolation(X_test.values.tolist(),161,8)
+        MP["y_train"] = y_train
+        MP["y_test"] = y_test
+
         data["MP"] = MP
     else:
         raise ValueError("only synth,CMJ or MP are valid dataset values")
