@@ -3,6 +3,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from sklearn.metrics import accuracy_score
+import timeit
 
 
 class ResNetBaseline(nn.Module):
@@ -19,7 +20,7 @@ class ResNetBaseline(nn.Module):
         The number of output classes
     """
 
-    def __init__(self, in_channels: int, mid_channels: int = 64,
+    def __init__(self, in_channels: int, save_name,mid_channels: int = 64,
                  num_pred_classes: int = 1) -> None:
         super().__init__()
 
@@ -36,6 +37,8 @@ class ResNetBaseline(nn.Module):
 
         ])
 
+        self.save_name = save_name
+
         if num_pred_classes==2:
             self.final = nn.Linear(mid_channels * 2, 1)
         else:
@@ -50,12 +53,11 @@ class ResNetBaseline(nn.Module):
 
         # useful variables
         patience_counter = 0
-        best_state_dic = None
         val_acc_hist = []
         train_loss_hist = []
 
         # optimizer and loss
-        optimizer=torch.optim.Adam(self.parameters(),lr=learning_rate)
+        optimizer=torch.optim.RMSprop(self.parameters(),lr=learning_rate,weight_decay=0.0001,momentum=0.9)
         binary_case = (self.input_args['num_pred_classes']==2)
         if binary_case:
             loss_fn = nn.BCEWithLogitsLoss( reduction='mean')
@@ -73,6 +75,7 @@ class ResNetBaseline(nn.Module):
                 train_loss.backward()
                 optimizer.step()
             train_loss_hist.append(np.mean(epoch_train_loss))
+
 
             epoch_val_loss = []
             #self.model.eval()
@@ -93,22 +96,24 @@ class ResNetBaseline(nn.Module):
                     pred_list.append(preds.cpu().numpy())
             true_np,preds_np = np.concatenate(true_list), np.concatenate(pred_list)
 
+
             # TODO Can I remove this line of code?
             preds_np= np.argmax(preds_np,axis=-1) if not binary_case else preds_np
             val_acc = accuracy_score(true_np,preds_np)
             val_acc_hist.append(val_acc)
-            #print("train loss", train_loss_hist[-1], "val loss", val_loss, "accuracy", val_acc)
+
+
             # early stopping
-            best_val_acc = max(val_acc_hist)
-            if best_val_acc>val_acc:
+            best_val_acc = max(val_acc_hist[:-1]) if len(val_acc_hist)>1 else 0
+            if best_val_acc>=val_acc:
                 val_acc_hist.append(val_acc)
                 patience_counter+=1
                 if patience_counter==patience:
-                    # TODO save model
                     return best_val_acc
             else:
                 val_acc_hist.append(val_acc)
                 patience_counter=0
+                torch.save( self.state_dict(), "saved_model/synths/"+self.save_name)
 
             #self.val_acc.append(val_acc)
             #self.val_loss.append(np.mean(epoch_val_loss))
