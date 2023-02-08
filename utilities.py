@@ -7,6 +7,7 @@ from sklearn import preprocessing
 import torch
 from scipy.interpolate import interp1d
 
+
 labels = ['cat', 'dog', 'mouse', 'elephant', 'pandas']
 le = preprocessing.LabelEncoder()
 targets = le.fit_transform(labels)
@@ -87,3 +88,10 @@ def interpolation(x,max_length,n_var):
             interpolated_data[i, :, j] = new_ts
         # interpolated_data[i, :, -1] = pid
     return interpolated_data
+
+#TODO add quote
+def gen_cube(instance):
+    result = []
+    for i in range(len(instance)):
+        result.append([instance[(i+j)%len(instance)] for j in range(len(instance))])
+    return result
