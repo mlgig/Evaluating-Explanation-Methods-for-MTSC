@@ -4,10 +4,11 @@ from sktime.transformations.panel.rocket import Rocket
 from sklearn.linear_model import RidgeClassifierCV
 import timeit
 from utilities import *
-from resnet_torch import ResNetBaseline
+#from resnet_torch import ResNetBaseline
+from dCAM.src.models.CNN_models import dResNetBaseline, ModelCNN
 
 def main():
-    all_data = load_data("CMJ")
+    all_data = load_data("synth")
 
     for dataset_name in all_data.keys():
         print("dataset ",dataset_name)
@@ -19,17 +20,18 @@ def main():
 
         # TODO try to increment batch size
         starttime = timeit.default_timer()
-        for _ in range(n_run):
+        for i in range(n_run):
             test_dataloader, train_dataloader, n_channels, n_classes, device = transform_data4ResNet(data,dataset_name)
-            model = ResNetBaseline(in_channels=n_channels, num_pred_classes=n_classes).double().to(device)
-            acc = model.fit(train_dataloader, test_dataloader,num_epochs=20,patience=3)
+            modelarch = dResNetBaseline(n_channels,mid_channels=64,num_pred_classes=n_classes).to(device)
+            model = ModelCNN(model=modelarch, save_path='saved_model/resNet/'+dataset_name+str(i) ,n_epochs_stop=30,device=device)
+            #acc = model.fit(train_dataloader, test_dataloader,num_epochs=20,patience=3)
+            acc = model.train(num_epochs=1000,train_loader=train_dataloader,test_loader=test_dataloader)
             acc_res.append(acc)
         print("\t resnet accuracy is ",np.sum(acc_res)/n_run, acc_res," time was ", (timeit.default_timer() - starttime)/n_run)
 
-        # TODO try np 3d array loader from https://www.sktime.org/en/v0.8.1/examples/loading_data.html#Using-NumPy-3d-arrays-with-sktime
-        train_set = np.transpose(data["X_train"],(0,2,1)) if type(data["X_train"])==np.array else data["X_train"]
-        test_set = np.transpose( data["X_test"],(0,2,1)) if type(data["X_test"])==np.array else data["X_test"]
-
+        #TODO move above train and test pointers
+        train_set = data["X_train"]
+        test_set =  data["X_test"]
 
 
         print(train_set.shape,test_set.shape)

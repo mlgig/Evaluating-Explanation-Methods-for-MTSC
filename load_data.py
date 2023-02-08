@@ -8,13 +8,15 @@ def load_data(data_name):
     if data_name=="synth":
         base_path = "./data/synth_data/data/"
         middle= "_F_20_TS_100_Positional_"
-        for generation_kinds in ["AutoRegressive","PseudoPeriodic","GaussianProcess"]:
-            for Positional in ["True","False"]:
+        for generation_kinds in ["PseudoPeriodic","GaussianProcess","AutoRegressive"]:
+            for Positional in ["False"]:
                 train_meta = np.load(os.path.join( base_path,"SimulatedTrainingMetaData_RareTime_"+generation_kinds+middle+Positional+".npy"),allow_pickle=True).item()
                 test_meta =  np.load(os.path.join( base_path,"SimulatedTestingMetaData_RareTime_"+generation_kinds+middle+Positional+".npy"),allow_pickle=True).item()
                 data[generation_kinds+"_Positional_"+Positional] = {
-                    "X_train" : np.load(os.path.join( base_path,"SimulatedTrainingData_RareTime_"+generation_kinds+middle+Positional+".npy")),
-                    "X_test" : np.load(os.path.join( base_path,"SimulatedTestingData_RareTime_"+generation_kinds+middle+Positional+".npy")),
+                    "X_train" : np.transpose(np.load(os.path.join(
+                        base_path,"SimulatedTrainingData_RareTime_"+generation_kinds+middle+Positional+".npy")) ,(0,2,1)),
+                    "X_test" :  np.transpose(np.load(os.path.join(
+                         base_path,"SimulatedTestingData_RareTime_"+generation_kinds+middle+Positional+".npy")),(0,2,1)),
                     "y_train" : train_meta['Targets'],
                     "y_test" : test_meta['Targets'],
                     "meta_train" : train_meta,

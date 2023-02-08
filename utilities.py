@@ -6,6 +6,7 @@ import numpy as np
 from sklearn import preprocessing
 import torch
 from scipy.interpolate import interp1d
+from dCAM.src.models.CNN_models import TSDataset
 
 
 labels = ['cat', 'dog', 'mouse', 'elephant', 'pandas']
@@ -23,6 +24,7 @@ def convert2tensor(data):
 
     return  torch.tensor(new_data, dtype=torch.float64)
 
+"""
 class myDataset(Dataset):
     def __init__(self, X,y, device):
         if type(X)==np.ndarray:
@@ -68,6 +70,22 @@ def transform_data4ResNet(data,dataset_name):
     n_classes = np.unique(data["y_train"]).size
 
     return test_dataloader, train_dataloader,n_channels,n_classes, device
+"""
+def transform_data4ResNet(data,dataset_name):
+
+    # get dataset loaders
+    device = device = "cuda" if torch.cuda.is_available() else "cpu"
+    n_channels = data["X_train"].shape[1]
+    n_classes = len( np.unique(data["y_train"]) )
+
+    train_set_cube = np.array([gen_cube(acl) for acl in data["X_train"].tolist()])
+    test_set_cube = np.array([gen_cube(acl) for acl in data["X_train"].tolist()])
+
+    batch_s = (16,8) if dataset_name=="CMJ" else (32,32)
+    train_loader = DataLoader(TSDataset(train_set_cube,data["y_train"]), batch_size=batch_s[0],shuffle=True)
+    test_loader = DataLoader(TSDataset(test_set_cube,data["y_test"]), batch_size=batch_s[1],shuffle=True)
+
+    return train_loader, test_loader,n_channels,n_classes, device
 
 def interpolation(x,max_length,n_var):
     n = len(x)
