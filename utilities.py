@@ -78,12 +78,17 @@ def transform_data4ResNet(data,dataset_name):
     n_channels = data["X_train"].shape[1]
     n_classes = len( np.unique(data["y_train"]) )
 
-    train_set_cube = np.array([gen_cube(acl) for acl in data["X_train"].tolist()])
-    test_set_cube = np.array([gen_cube(acl) for acl in data["X_train"].tolist()])
+    if type(data['X_train']) == pd.DataFrame:
+        train_set_cube = np.array([gen_cube(acl) for acl in data["X_train"].values.tolist()])
+        test_set_cube = np.array([gen_cube(acl) for acl in data["X_test"].values.tolist()])
+    else:
+        train_set_cube = np.array([gen_cube(acl) for acl in data["X_train"].tolist()])
+        test_set_cube = np.array([gen_cube(acl) for acl in data["X_test"].tolist()])
 
-    batch_s = (16,8) if dataset_name=="CMJ" else (32,32)
-    train_loader = DataLoader(TSDataset(train_set_cube,data["y_train"]), batch_size=batch_s[0],shuffle=True)
-    test_loader = DataLoader(TSDataset(test_set_cube,data["y_test"]), batch_size=batch_s[1],shuffle=True)
+    batch_s = (8,16) if dataset_name=="CMJ" else (64,64)
+    #TODO fix for MP. better to use the one to hot before?
+    train_loader = DataLoader(TSDataset(train_set_cube,data["y_train"].astype(float)), batch_size=batch_s[0],shuffle=True)
+    test_loader = DataLoader(TSDataset(test_set_cube,data["y_test"].astype(float)), batch_size=batch_s[1],shuffle=True)
 
     return train_loader, test_loader,n_channels,n_classes, device
 
