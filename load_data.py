@@ -32,6 +32,7 @@ def load_data(data_name):
         CMJ["X_test"], CMJ["y_test"] = load_from_arff_to_dataframe(os.path.join(base_path,name+"_TEST.arff"),replace_missing_vals_with='0')
         data["CMJ"] = CMJ
     elif data_name=="MP":
+        #TODO change path
         base_path="/home/davide/Downloads/PoseEstimation-20221206T155730Z-001/PoseEstimation/OpenPosev1.7/MP/Unnormalized8VariableLength"
 
         MP = {}

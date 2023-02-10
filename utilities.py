@@ -1,17 +1,12 @@
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
-from sklearn.preprocessing import OneHotEncoder
 import pandas as pd
 import numpy as np
-from sklearn import preprocessing
+from sklearn.preprocessing import LabelEncoder
 import torch
 from scipy.interpolate import interp1d
 from dCAM.src.models.CNN_models import TSDataset
 
-
-labels = ['cat', 'dog', 'mouse', 'elephant', 'pandas']
-le = preprocessing.LabelEncoder()
-targets = le.fit_transform(labels)
 
 def convert2tensor(data):
     dims = data.shape
@@ -71,6 +66,13 @@ def transform_data4ResNet(data,dataset_name):
 
     return test_dataloader, train_dataloader,n_channels,n_classes, device
 """
+
+def one_hot_encoding(train_labels,test_labels):
+    enc = LabelEncoder()
+    y_train = enc.fit_transform(train_labels)
+    y_test = enc.transform(test_labels)
+
+    return y_train,y_test
 def transform_data4ResNet(data,dataset_name):
 
     # get dataset loaders
@@ -86,15 +88,16 @@ def transform_data4ResNet(data,dataset_name):
         test_set_cube = np.array([gen_cube(acl) for acl in data["X_test"].tolist()])
 
     batch_s = (8,16) if dataset_name=="CMJ" else (64,64)
+    y_train,y_test = one_hot_encoding( data["y_train"],data["y_test"] )
     #TODO fix for MP. better to use the one to hot before?
-    train_loader = DataLoader(TSDataset(train_set_cube,data["y_train"].astype(float)), batch_size=batch_s[0],shuffle=True)
-    test_loader = DataLoader(TSDataset(test_set_cube,data["y_test"].astype(float)), batch_size=batch_s[1],shuffle=True)
+    train_loader = DataLoader(TSDataset(train_set_cube,y_train), batch_size=batch_s[0],shuffle=True)
+    test_loader = DataLoader(TSDataset(test_set_cube,y_test), batch_size=batch_s[1],shuffle=True)
 
     return train_loader, test_loader,n_channels,n_classes, device
 
 def interpolation(x,max_length,n_var):
     n = len(x)
-    interpolated_data = np.zeros((n, max_length, n_var), dtype=np.float64)
+    interpolated_data = np.zeros((n, n_var,max_length), dtype=np.float64)
 
     for i in range(n):
         mts = x[i]
@@ -108,7 +111,7 @@ def interpolation(x,max_length,n_var):
             # linear interpolation
             f = interp1d(idx, ts, kind='cubic')
             new_ts = f(idx_new)
-            interpolated_data[i, :, j] = new_ts
+            interpolated_data[i, j, :] = new_ts
         # interpolated_data[i, :, -1] = pid
     return interpolated_data
 

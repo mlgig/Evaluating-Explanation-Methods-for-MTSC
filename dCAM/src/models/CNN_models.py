@@ -28,7 +28,7 @@ class ModelCNN():
 	def __init__(self,
 				 model,
 				 n_epochs_stop,
-				 save_path,
+				 save_path=None,
 				 device="cpu",
 				 criterion=nn.CrossEntropyLoss(),
 				 learning_rate=0.00001):
@@ -68,7 +68,7 @@ class ModelCNN():
 
 		return mean_loss,tot_correct,total_sample
 
-	def train(self,num_epochs,dataloader_cl1,dataloader_cl1_test,model_name='model'):
+	def train(self,num_epochs,train_loader,test_loader):
 
 		#inner function to print statistics
 		def print_stats():
@@ -94,11 +94,10 @@ class ModelCNN():
 			total_sample_train = []
 
 
-			for i,batch_data_train in enumerate(dataloader_cl1):
+			for i,batch_data_train in enumerate(train_loader):
 				self.model.train()
 
 				ts_train, label_train = batch_data_train
-
 				img_train = Variable(ts_train.float()).to(self.device)
 				v_label_train = Variable(label_train.float()).to(self.device)
 
@@ -120,7 +119,7 @@ class ModelCNN():
 				total_sample_train.append(total_train)
 
 			# ==================eval on test=====================
-			mean_loss_test,tot_correct_test,total_sample_test = self.__test(dataloader_cl1_test)
+			mean_loss_test,tot_correct_test,total_sample_test = self.__test(test_loader)
 			current_val_accuracy = np.sum(tot_correct_test)/np.sum(total_sample_test)
 
 			# ====================verbose========================
@@ -143,7 +142,8 @@ class ModelCNN():
 
 			if current_val_accuracy>max_val_accuracy:
 				#np.sum(mean_loss_test) < min_val_loss:
-				torch.save(self.model, self.save_path)
+				if self.save_path!=None:
+					torch.save(self.model, self.save_path)
 				epochs_no_improve = 0
 				min_val_loss = np.sum(mean_loss_test)
 				max_val_accuracy = current_val_accuracy
@@ -151,8 +151,10 @@ class ModelCNN():
 				epochs_no_improve += 1
 				if epochs_no_improve == self.n_epochs_stop:
 					print("TRAIN EARLY STOPPED; best accuracy is %f best loss is %f",max_val_accuracy,min_val_loss)
-					self.model = torch.load(self.save_path)
+					if self.save_path!=None:
+						self.model = torch.load(self.save_path)
 					break
+		return max_val_accuracy
 
 	def predict(self,test_loader):
 		predictions = []
