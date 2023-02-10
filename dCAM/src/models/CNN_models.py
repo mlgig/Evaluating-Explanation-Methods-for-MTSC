@@ -150,7 +150,8 @@ class ModelCNN():
 			else:
 				epochs_no_improve += 1
 				if epochs_no_improve == self.n_epochs_stop:
-					print("TRAIN EARLY STOPPED; best accuracy is %f best loss is %f",max_val_accuracy,min_val_loss)
+					print("TRAIN EARLY STOPPED; best accuracy is {:.2f} best loss is {:.4f}"
+						  .format( max_val_accuracy,np.average(min_val_loss) ))
 					if self.save_path!=None:
 						self.model = torch.load(self.save_path)
 					break
