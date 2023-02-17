@@ -10,8 +10,8 @@ from joblib import dump, load
 
 
 
-import warnings
-warnings.filterwarnings("ignore")
+#import warnings
+#warnings.filterwarnings("ignore")
 
 #TODO is there a better way to import the files?
 import sys
@@ -27,6 +27,8 @@ def main():
     for dataset_name in all_data.keys():
         print("dataset ",dataset_name)
         data = all_data[dataset_name]
+        train_set = data["X_train"]
+        test_set =  data["X_test"]
 
         # temp main for getting accuracy using synth datasets
         n_run = 5
@@ -34,29 +36,18 @@ def main():
 
         acc_res = []
         starttime = timeit.default_timer()
-        mid_channels = 128
+        mid_channels=64 if (dataset_name=="MP" or dataset_name=="CMJ")  else 128
+        print("filters",mid_channels)
         for i in range(n_run):
             train_dataloader,test_dataloader, n_channels, n_classes, device = transform_data4ResNet(data,dataset_name)
-            # TODO check carefully data types in the hole process as label types?
-            # TODO also check the conversion as .float() etc. Can I avoid some of them?
-            # TODO with synth data better to have 128 filters so i should change batch size to 32 both for train and test
             modelarch = dResNetBaseline(n_channels,mid_channels=mid_channels,num_pred_classes=n_classes).to(device)
-            model = ModelCNN(model=modelarch ,n_epochs_stop=30,device=device,save_path='saved_model/resNet/'
-                    +dataset_name+"_nFilters_"+str(mid_channels)+"_"+str(i))
+            model = ModelCNN(model=modelarch ,n_epochs_stop=30,device=device)#,save_path='saved_model/resNet/'
+                    #+dataset_name+"_nFilters_"+str(mid_channels)+"_"+str(i))
             acc = model.train(num_epochs=1000,train_loader=train_dataloader,test_loader=test_dataloader)
             print(i,acc)
             acc_res.append(acc)
         print("\t resnet accuracy is ",np.sum(acc_res)/n_run, acc_res," time was ", (timeit.default_timer() - starttime)/n_run)
 
-        
-
-        #TODO move above train and test pointers
-        train_set = data["X_train"]
-        test_set =  data["X_test"]
-
-
-        print(train_set.shape,test_set.shape)
-        # TODO convert to a DataFrame for synth data
         starttime = timeit.default_timer()
 
         for normal in [True,False]:
@@ -65,6 +56,7 @@ def main():
 
                 # rocket
                 cls = make_pipeline(Rocket(normalise=normal),
+                                    #LogisticRegressionCV(dual=True,solver='liblinear',penalty='l2',max_iter=1000))
                                     #LogisticRegressionCV(solver='newton-cg',multi_class = 'multinomial', class_weight='balanced'))
                                     RidgeClassifierCV(alphas=np.logspace(-3, 3, 10), normalize=True))
                 cls.fit(train_set,data["y_train"])
@@ -84,7 +76,7 @@ def main():
                 acc = model.score(test_set,data["y_test"])
                 print(acc)
                 acc_mrSEQL.append(acc)
-                dump(model,"saved_model/mrSEQL/"+dataset_name+"_seql_"+str(seql)+"_"+str(i))
+                #dump(model,"saved_model/mrSEQL/"+dataset_name+"_seql_"+str(seql)+"_"+str(i))
             print("\t mrSeql ",seql," sax accuracy is ", np.sum(acc_mrSEQL)/n_run," time was ",  (timeit.default_timer() - starttime)/n_run)
 
 

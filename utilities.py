@@ -87,7 +87,13 @@ def transform_data4ResNet(data,dataset_name):
         train_set_cube = np.array([gen_cube(acl) for acl in data["X_train"].tolist()])
         test_set_cube = np.array([gen_cube(acl) for acl in data["X_test"].tolist()])
 
-    batch_s = (8,16) if dataset_name=="CMJ" else (64,64)
+    if dataset_name=="CMJ":
+        batch_s = (8,16)
+    elif dataset_name=="MP":
+        batch_s = (64,64)
+    else:
+        batch_s = (32,32)
+    print(batch_s)
     y_train,y_test = one_hot_encoding( data["y_train"],data["y_test"] )
     #TODO fix for MP. better to use the one to hot before?
     train_loader = DataLoader(TSDataset(train_set_cube,y_train), batch_size=batch_s[0],shuffle=True)
