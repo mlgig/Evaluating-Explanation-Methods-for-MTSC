@@ -9,7 +9,7 @@ def load_data(data_name):
         base_path = "./data/synth_data/data/"
         middle= "_F_20_TS_100_Positional_"
         for generation_kinds in ["PseudoPeriodic","GaussianProcess","AutoRegressive"]:
-            for Positional in ["False"]:
+            for Positional in ["False","True"]: # ["True"]:  #'
                 train_meta = np.load(os.path.join( base_path,"SimulatedTrainingMetaData_RareTime_"+generation_kinds+middle+Positional+".npy"),allow_pickle=True).item()
                 test_meta =  np.load(os.path.join( base_path,"SimulatedTestingMetaData_RareTime_"+generation_kinds+middle+Positional+".npy"),allow_pickle=True).item()
                 data[generation_kinds+"_Positional_"+Positional] = {
@@ -33,7 +33,7 @@ def load_data(data_name):
         data["CMJ"] = CMJ
     elif data_name=="MP":
         #TODO change path
-        base_path="/home/davide/Downloads/PoseEstimation-20221206T155730Z-001/PoseEstimation/OpenPosev1.7/MP/Unnormalized8VariableLength"
+        base_path="data/MP_Unnormalized8VariableLength/"
 
         MP = {}
         X_train, y_train = load_from_tsfile_to_dataframe(os.path.join(base_path,"TRAIN_default_X.ts"))
