@@ -72,7 +72,7 @@ def one_hot_encoding(train_labels,test_labels):
     y_train = enc.fit_transform(train_labels)
     y_test = enc.transform(test_labels)
 
-    return y_train,y_test
+    return y_train,y_test,enc
 def transform_data4ResNet(data,dataset_name):
 
     # get dataset loaders
@@ -93,12 +93,14 @@ def transform_data4ResNet(data,dataset_name):
         batch_s = (64,64)
     else:
         batch_s = (32,32)
-    y_train,y_test = one_hot_encoding( data["y_train"],data["y_test"] )
+
+    y_train,y_test,enc = one_hot_encoding( data["y_train"],data["y_test"] )
+
     #TODO fix for MP. better to use the one to hot before?
     train_loader = DataLoader(TSDataset(train_set_cube,y_train), batch_size=batch_s[0],shuffle=True)
     test_loader = DataLoader(TSDataset(test_set_cube,y_test), batch_size=batch_s[1],shuffle=False)
 
-    return train_loader, test_loader,n_channels,n_classes, device, y_test
+    return train_loader, test_loader,n_channels,n_classes, device, enc
 
 def interpolation(x,max_length,n_var):
     n = len(x)
