@@ -24,9 +24,9 @@ class DCAM():
 
 
 
-    def run(self,instance,nb_permutation,label_instance):
+    def run(self,instance,nb_permutation,label_instance,generate_all):
         #print (instance.shape, nb_permutation,label_instance)
-        all_permut,permut_success = self.__compute_permutations(instance, nb_permutation,label_instance)
+        all_permut,permut_success = self.__compute_permutations(instance, nb_permutation,label_instance,generate_all)
         #print( all_permut,"\n",permut_success)
         dcam =  self.__extract_dcam(self.__merge_permutation(all_permut))
         return dcam,permut_success
@@ -45,13 +45,30 @@ class DCAM():
 
     
 
-    # ================Private methods=====================   
+    # ================Private methods=====================
 
-    def __gen_cube_random(self,instance):
+    # new function to generate all the possible permutations
+    def __permutations(self,n):
+        a = np.zeros((np.math.factorial(n), n), np.uint8)
+        f = 1
+        for m in range(2, n+1):
+            b = a[:f, n-m+1:]      # the block of permutations of range(m-1)
+            for i in range(1, m):
+                a[i*f:(i+1)*f, n-m] = i
+                a[i*f:(i+1)*f, n-m+1:] = b + (b >= i)
+            b += 1
+            f *= m
+        return a
+    def __gen_cube_random(self,instance,gen_all,n):
         result = []
         result_comb = []
-        initial_comb = list(range(len(instance)))
-        random.shuffle(initial_comb)
+        if gen_all:
+            # in the case we generate all the possible permutations, keep the n-th
+            all_permutations = self.__permutations(len(instance))
+            initial_comb = all_permutations[n].tolist()
+        else:
+            initial_comb = list(range(len(instance)))
+            random.shuffle(initial_comb)
         for i in range(len(instance)):
             result.append([instance[initial_comb[(i+j)%len(instance)]] for j in range(len(instance))])
             result_comb.append([initial_comb[(i+j)%len(instance)] for j in range(len(instance))]) 
@@ -125,8 +142,8 @@ class DCAM():
 
 
 
-    def __compute_multidim_cam(self,instance,nb_dim,index_perm):
-        acl,comb = self.__gen_cube_random(instance)
+    def __compute_multidim_cam(self,instance,nb_dim,index_perm,generate_all):
+        acl,comb = self.__gen_cube_random(instance,generate_all,index_perm)
         overlay,pred_class = self.__get_CAM_class(np.array(acl))
         full_mat = np.zeros((nb_dim,nb_dim,len(overlay[0])))
         for i in range(nb_dim):
@@ -136,13 +153,13 @@ class DCAM():
         return overlay,full_mat,pred_class
 
 
-    def __compute_permutations(self,instance, nb_permutation,label_instance):
+    def __compute_permutations(self,instance, nb_permutation,label_instance,generate_all):
         all_pred_class = []
         all_matfull_list = []
 
         final_mat = np.zeros((len(instance),len(instance)))
         for k in tqdm(range(0,nb_permutation)):
-            _,fmat,class_pred = self.__compute_multidim_cam(instance,len(instance),k)
+            _,fmat,class_pred = self.__compute_multidim_cam(instance,len(instance),k,generate_all)
             #print(fmat.shape,class_pred,label_instance)
             if class_pred == label_instance:
                 all_matfull_list.append(fmat)

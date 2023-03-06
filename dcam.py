@@ -19,7 +19,7 @@ from DCAM import DCAM
 
 
 
-def plot(dcam,instance,dataset_name,j,true_label):
+def plot(dcam,instance,dataset_name,j,true_label,dimension_names):
     plt.figure(figsize=(20,5), dpi=80)
     plt.title('multivariate data series')
     nb_dim = len(instance)
@@ -27,18 +27,18 @@ def plot(dcam,instance,dataset_name,j,true_label):
         plt.subplot(nb_dim,1,1+i)
         plt.plot(instance[i])
         plt.xlim(0,len(instance[i]))
-        plt.yticks([0],["Dim {}".format(i)])
+        plt.yticks([0],[dimension_names[i]])
 
     plt.figure(figsize=(20,5))
     #plt.title('dCAM')
     plt.imshow(dcam,aspect='auto',interpolation=None)
-    plt.yticks(list(range(nb_dim)), ["Dim {}".format(i) for i in range(nb_dim)])
+    plt.yticks(list(range(nb_dim)), [el for el in dimension_names])
     file_name = dataset_name+"_"+str(j)+"_GTlabel.png" if true_label else dataset_name+"_"+str(j)+"_OUTlabel.png"
-    plt.savefig("dCAM_results/plots/"+dataset_name+"/"+file_name)
+    plt.savefig("explanations/dCAM_results/plots/"+dataset_name+"/"+file_name)
     #plt.colorbar(img)
 
 def main():
-    all_data = load_data("synth")
+    all_data = load_data("CMJ")
 
 
     for dataset_name in all_data.keys():
@@ -58,6 +58,7 @@ def main():
         explanation= [ {} for i in range (testSet_length)]
         dcam = DCAM(resnet.model,device,last_conv_layer=last_conv_layer,fc_layer_name=fc_layer_name)
 
+        X_test = all_data[dataset_name]["X_test"]
         starttime = timeit.default_timer()
         for i in range(testSet_length):
             #TODO modify the code for CMJ. Compute just the 6 possible permutations
@@ -67,18 +68,18 @@ def main():
             #   plt.subplot(nb_dim,1,1+i)
             print("explaining ",i,"-th sample of",dataset_name,"out of",testSet_length)
 
-            instance = all_data[dataset_name]["X_test"][i] if type(all_data[dataset_name]["X_train"])==np.ndarray else  \
-                all_data[dataset_name]["X_test"].values[i]
+            instance = X_test[i] if type(X_test)==np.ndarray else X_test.values[i]
             gt_label = target_idxs[i]
             output_label = cnn_output[i]
 
-            nb_permutation = 200
+            nb_permutation = 6
+            generate_all = True
             try:
                 dcam_tl,permutation_success_tl = dcam.run(
-                    instance=instance, nb_permutation=nb_permutation, label_instance=gt_label)
+                    instance=instance, nb_permutation=nb_permutation, label_instance=gt_label,generate_all=generate_all)
                 explanation[i]["dcam_tl"] = dcam_tl
                 explanation[i]["permutation_success_tl"] = permutation_success_tl
-                plot(dcam_tl,instance,dataset_name,i,True)
+                plot(dcam_tl,instance,dataset_name,i,True,X_test.columns.values)
             except IndexError:
                 explanation[i]["dcam_tl"] = -1
                 explanation[i]["permutation_success_tl"] = 0
@@ -86,20 +87,19 @@ def main():
 
             try:
                 dcam_ol,permutation_success_ol = dcam.run(
-                    instance=instance, nb_permutation=nb_permutation, label_instance=output_label)
+                    instance=instance, nb_permutation=nb_permutation, label_instance=output_label,generate_all=generate_all)
                 explanation[i]["dcam_ol"] = dcam_ol
                 explanation[i]["permutation_success_ol"] = permutation_success_ol
-                plot(dcam_ol,instance,dataset_name,i,False)
+                plot(dcam_ol,instance,dataset_name,i,False,X_test.columns.values)
             except IndexError:
                 explanation[i]["dcam_ol"] = -1
                 explanation[i]["permutation_success_ol"] = 0
                 sys.stderr.write("index error in predictions""""""""\n\n")
 
-
             explanation[i]["ground_truth_label"] = all_data[dataset_name]["y_test"][i]
             explanation[i]["output_label"] = symbolic_output[i]
         print("average time spent was", (timeit.default_timer() - starttime)/testSet_length)
-        np.save("dCAM_results/"+dataset_name+"_explenations",explanation)
+        np.save("explanations/dCAM_results/"+dataset_name+"_explenations",explanation)
 
 if __name__ == "__main__" :
     main()
