@@ -11,9 +11,7 @@ from sklearn.preprocessing import FunctionTransformer
 from joblib import  load
 import sys
 sys.path.insert(0, 'timeXplain')
-from sktime.transformations.panel.rocket import Rocket
-from sklearn.linear_model import RidgeClassifierCV, LogisticRegressionCV
-from  sklearn.preprocessing import StandardScaler
+
 
 def trainAndExplain(X_train,y_train,X_test,y_test,channel_name,size_x,n_slices,dataset_name,curr_section):
 
