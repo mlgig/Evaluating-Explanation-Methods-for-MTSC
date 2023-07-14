@@ -11,7 +11,6 @@ import torch
 from typing import cast, Union, List
 
 
-
 class TSDataset(data.Dataset):
 	def __init__(self,x_train,labels):
 		self.samples = x_train
