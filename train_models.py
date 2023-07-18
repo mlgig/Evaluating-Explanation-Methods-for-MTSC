@@ -45,7 +45,6 @@ def main():
                 train_dataloader,test_dataloader, n_channels, n_classes, device,_ = transform_data4ResNet(
                     data,dataset_name,concat=concat)
                 modelarch = dResNetBaseline(n_channels,mid_channels=mid_channels,num_pred_classes=n_classes).to(device)
-
                 model = ModelCNN(model=modelarch ,n_epochs_stop=100,device=device,save_path='saved_model/resNet/'
                                                             +dataset_name+"_nFilters_"+str(mid_channels)+"_"+str(i)  )
                 acc = model.train(num_epochs=11,train_loader=train_dataloader,test_loader=test_dataloader)
@@ -68,7 +67,7 @@ def main():
                 cls.fit(train_set,data["y_train"])
                 acc = cls.score(test_set,data["y_test"])
                 acc_rocket.append(acc)
-                dump(cls,"saved_model/rocket/"+dataset_name+"_new_norm_"+str(normal)+"_"+str(i))
+                dump(cls,"saved_model/rocket/"+dataset_name+"_norm_"+str(normal)+"_"+str(i))
             print("\t rocket normal ",normal," accuracy is ",np.sum(acc_rocket)/n_run," time was ", (timeit.default_timer() - starttime)/n_run)
 
 if __name__ == "__main__" :

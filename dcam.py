@@ -1,7 +1,7 @@
 from load_data import *
 from utilities import transform_data4ResNet
 import numpy as np
-import matplotlib.pyplot as plt
+from utilities import plot_dcam
 import torch
 import timeit
 from sklearn.metrics import accuracy_score
@@ -19,23 +19,6 @@ from CNN_models import *
 from DCAM import DCAM
 
 # function took by dCAM notebook to plot the explanation
-def plot(dcam,instance,dataset_name,j,true_label,dimension_names):
-    plt.figure(figsize=(20,5), dpi=80)
-    plt.title('multivariate data series')
-    nb_dim = len(instance)
-    for i in range(nb_dim):
-        plt.subplot(nb_dim,1,1+i)
-        plt.plot(instance[i])
-        plt.xlim(0,len(instance[i]))
-        plt.yticks([0],[dimension_names[i]])
-
-    plt.figure(figsize=(20,5))
-    #plt.title('dCAM')
-    plt.imshow(dcam,aspect='auto',interpolation=None)
-    plt.yticks(list(range(nb_dim)), [el for el in dimension_names])
-    file_name = dataset_name+"_"+str(j)+"_GTlabel.png" if true_label else dataset_name+"_"+str(j)+"_OUTlabel.png"
-    plt.savefig("explanations/dCAM_results/plots/"+dataset_name+"/"+file_name)
-    #plt.colorbar(img)
 
 def main():
     concat = False
@@ -89,7 +72,7 @@ def main():
                     instance=instance, nb_permutation=nb_permutation, label_instance=gt_label,generate_all=generate_all)
                 explanation[i]["dcam_tl"] = dcam_tl
                 explanation[i]["permutation_success_tl"] = permutation_success_tl
-                plot(dcam_tl,instance,dataset_name,i,True,column_names)
+                plot_dcam(dcam_tl,instance,dataset_name,i,True,column_names)
             except IndexError:
                 explanation[i]["dcam_tl"] = np.array(-1)
                 explanation[i]["permutation_success_tl"] = 0
@@ -101,7 +84,7 @@ def main():
                     instance=instance, nb_permutation=nb_permutation, label_instance=output_label,generate_all=generate_all)
                 explanation[i]["dcam_ol"] = dcam_ol
                 explanation[i]["permutation_success_ol"] = permutation_success_ol
-                plot(dcam_ol,instance,dataset_name,i,False,column_names)
+                plot_dcam(dcam_ol,instance,dataset_name,i,False,column_names)
             except IndexError:
                 explanation[i]["dcam_ol"] =  np.array(-1)
                 explanation[i]["permutation_success_ol"] = 0

@@ -7,18 +7,6 @@ from scipy.interpolate import interp1d
 from dCAM.src.models.CNN_models import TSDataset
 
 
-def convert2tensor(data):
-    dims = data.shape
-    new_data = []
-    for i in range(dims[0]):
-        tmp = []
-        for j in range(dims[1]):
-            tmp.append(data.values[i][j])
-        new_data.append(tmp)
-
-    return  torch.tensor(new_data, dtype=torch.float64)
-
-
 def one_hot_encoding(train_labels,test_labels):
     enc = LabelEncoder()
     y_train = enc.fit_transform(train_labels)
@@ -53,7 +41,6 @@ def transform_data4ResNet(data,dataset_name,concat):
 
     y_train,y_test,enc = one_hot_encoding( data["y_train"],data["y_test"] )
 
-    #TODO fix for MP. better to use the one to hot before?
     train_loader = DataLoader(TSDataset(train_set_cube,y_train), batch_size=batch_s[0],shuffle=True)
     test_loader = DataLoader(TSDataset(test_set_cube,y_test), batch_size=batch_s[1],shuffle=False)
 
@@ -84,3 +71,21 @@ def gen_cube(instance):
     for i in range(len(instance)):
         result.append([instance[(i+j)%len(instance)] for j in range(len(instance))])
     return result
+
+def plot_dcam(dcam,instance,dataset_name,j,true_label,dimension_names):
+    plt.figure(figsize=(20,5), dpi=80)
+    plt.title('multivariate data series')
+    nb_dim = len(instance)
+    for i in range(nb_dim):
+        plt.subplot(nb_dim,1,1+i)
+        plt.plot(instance[i])
+        plt.xlim(0,len(instance[i]))
+        plt.yticks([0],[dimension_names[i]])
+
+    plt.figure(figsize=(20,5))
+    #plt.title('dCAM')
+    plt.imshow(dcam,aspect='auto',interpolation=None)
+    plt.yticks(list(range(nb_dim)), [el for el in dimension_names])
+    file_name = dataset_name+"_"+str(j)+"_GTlabel.png" if true_label else dataset_name+"_"+str(j)+"_OUTlabel.png"
+    plt.savefig("explanations/dCAM_results/plots/"+dataset_name+"/"+file_name)
+    #plt.colorbar(img)
