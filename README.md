@@ -9,7 +9,11 @@ Multivariate time series classification is an important computational task arisi
 ## Results:
 
 ![image](https://github.com/mlgig/Evaluating-Explanation-Methods-for-MTSC/blob/main/imgs/accuracy.png) 
+
+
 ![image](https://github.com/mlgig/Evaluating-Explanation-Methods-for-MTSC/blob/main/imgs/synthetic_results.png) 
+
+
 ![image](https://github.com/mlgig/Evaluating-Explanation-Methods-for-MTSC/blob/main/imgs/realWorld_results.png) 
 
 ## How to cite:
