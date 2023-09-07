@@ -1,6 +1,6 @@
 # Evaluating-Explanation-Methods-for-MTSC
 
-Accepted for AALTD 2023 
+Accepted for AALTD 2023 (8th Workshop on Advanced Analytics and Learning on Temporal Data, ECMLPKDD 2023)
 
 ## Abstract:
 
