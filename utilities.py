@@ -5,6 +5,7 @@ from sklearn.preprocessing import LabelEncoder
 import torch
 from scipy.interpolate import interp1d
 from dCAM.src.models.CNN_models import TSDataset
+import matplotlib.pyplot as plt
 
 
 def one_hot_encoding(train_labels,test_labels):

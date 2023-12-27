@@ -33,7 +33,7 @@ def load_data(data_name,concat):
 
     elif data_name=="CMJ":
         base_path="data/CounterMovementJump/"
-        name = "resampled.npy"
+        name = "CMJ_resampled.npy"
         CMJ = np.load(base_path+name,allow_pickle=True).item()
         data["CMJ"] = CMJ
         if concat:

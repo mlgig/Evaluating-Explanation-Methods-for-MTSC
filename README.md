@@ -17,6 +17,17 @@ Multivariate time series classification is an important computational task arisi
 ![image](https://github.com/mlgig/Evaluating-Explanation-Methods-for-MTSC/blob/main/imgs/realWorld_results.png) 
 
 ## How to cite:
+...
+@inproceedings{serramazza2023evaluating,
+  title={Evaluating Explanation Methods for Multivariate Time Series Classification},
+  author={Serramazza, Davide Italo and Nguyen, Thu Trang and Le Nguyen, Thach and Ifrim, Georgiana},
+  booktitle={International Workshop on Advanced Analytics and Learning on Temporal Data},
+  pages={159--175},
+  year={2023},
+  organization={Springer}
+}
+...
+
 
 ```
 @misc{serramazza2023evaluating,
