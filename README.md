@@ -1,6 +1,6 @@
 # Evaluating-Explanation-Methods-for-MTSC
 
-Accepted for [AALTD 2023](https://ecml-aaltd.github.io/aaltd2023/program.html) (8th International Workshop on Advanced Analytics and Learning on Temporal Data, ECMLPKDD 2023)
+Presented at [AALTD 2023](https://ecml-aaltd.github.io/aaltd2023/program.html) (8th International Workshop on Advanced Analytics and Learning on Temporal Data, ECMLPKDD 2023)
 
 ## Abstract:
 
@@ -17,7 +17,7 @@ Multivariate time series classification is an important computational task arisi
 ![image](https://github.com/mlgig/Evaluating-Explanation-Methods-for-MTSC/blob/main/imgs/realWorld_results.png) 
 
 ## How to cite:
-...
+```
 @inproceedings{serramazza2023evaluating,
   title={Evaluating Explanation Methods for Multivariate Time Series Classification},
   author={Serramazza, Davide Italo and Nguyen, Thu Trang and Le Nguyen, Thach and Ifrim, Georgiana},
@@ -26,7 +26,7 @@ Multivariate time series classification is an important computational task arisi
   year={2023},
   organization={Springer}
 }
-...
+```
 
 
 ```
